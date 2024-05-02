@@ -7,7 +7,6 @@ Matrix::Matrix(int rows, int cols, std::vector<std::vector<double>>* data)
 	this->rows = rows;
 	this->cols = cols;
 	data->swap(this->data);
-	//this->data.swap(*data);
 }
 
 void Matrix::Show()

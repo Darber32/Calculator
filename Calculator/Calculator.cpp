@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include "fstream"
 #include <list>
 #include "Token.h"
 #include "Number.h"
@@ -10,6 +11,7 @@
 #include "Matrix.h"
 #include "Formula_Exception.h"
 #include "Calculable_Exception.h"
+#include "json.hpp"
 
 class Calculator
 {
@@ -19,6 +21,15 @@ private:
 
     void Make_Arr(std::string s, int key)
     {
+        nlohmann::json json;
+        if (key == 3)
+        {
+            std::fstream file;
+            file.open("test.json");
+            file >> json;
+            file.close();
+            s = json["formula"];
+        }
         std::erase(s, ' ');
         std::string num, var;
         for (int i = 0; i < s.size(); i++)
@@ -49,16 +60,17 @@ private:
                 if ((s[i + 1] < 'A' or s[i + 1] > 'Z') and (s[i + 1] < 'a' or s[i + 1] > 'z'))
                 {
                     Data* data = nullptr;;
+                    double x;
+                    int a, b, rows, cols;
+                    std::vector<std::vector<double>> arr;
                     switch (key)
                     {
                     case 0:
-                        double x;
                         std::cout << "Введите значение переменной " << var << ": ";
                         std::cin >> x;
                         data = new Double(x);
                         break;
                     case 1:
-                        int a, b;
                         std::cout << "Введите значение числителя переменной " << var << ": ";
                         std::cin >> a;
                         std::cout << "Введите значение знаменателя переменной " << var << ": ";
@@ -66,8 +78,6 @@ private:
                         data = new Fraction(a, b);
                         break;
                     case 2:
-                        int rows, cols;
-                        std::vector<std::vector<double>> arr;
                         do
                         {
                             std::cout << "Введите количество строк для переменной " << var << ": ";
@@ -93,6 +103,37 @@ private:
                         }
                         data = new Matrix(rows, cols, &arr);
                         break;
+                    case 3:
+                    {
+                        for (auto i : json["variables"])
+                        {
+                            if (i["name"] == var)
+                            {
+                                int x = i["type"];
+                                switch (x)
+                                {
+                                case 0:
+                                    data = new Double(i["value"]);
+                                    break;
+                                case 1:
+                                    data = new Fraction(i["value"]["num"], i["value"]["denom"]);
+                                    break;
+                                case 2:
+                                    rows = i["value"]["rows"];
+                                    cols = i["value"]["cols"];
+                                    arr.resize(rows);
+                                    for (int i = 0; i < arr.size(); i++)
+                                    {
+                                        arr[i].resize(cols);
+                                        for (int j = 0; j < arr[i].size(); j++)
+                                            arr[i][j] = json["variables"][2]["value"]["data"][i][j];
+                                    }
+                                    data = new Matrix(rows, cols, &arr);
+                                }
+                                break;
+                            }
+                        }
+                    }
                     }
                     Variable* v = new Variable(var, data);
                     token_arr.push_back(v);
@@ -189,9 +230,9 @@ private:
 
     Data* Calculate()
     {
-        for (auto i : rpn)
-            i->Show();
-        std::cout << std::endl;
+        //for (auto i : rpn)
+        //    i->Show();
+        //std::cout << std::endl;
         Token* temp = nullptr;
         while (not rpn.empty())
         {
@@ -252,17 +293,29 @@ private:
     void Clear()
     {
         if (not token_arr.empty())
+        {
             for (auto i : token_arr)
                 delete i;
+            token_arr.clear();
+        }
         if (not rpn.empty())
+        {
             for (auto i : rpn)
                 delete i;
+            rpn.clear();
+        }
         if (not stack.empty())
+        {
             for (auto i : stack)
                 delete i;
+            stack.clear();
+        }
         if (not ans.empty())
+        {
             for (auto i : ans)
                 delete i;
+            ans.clear();
+        }
     }
 
 public:
@@ -281,6 +334,7 @@ public:
         }
         catch (Exception* e)
         {
+            Clear();
             if (e->Get_Type() == Exception_Type::Formula_Exception)
             {
                 std::cout << "Формула введена неверно: ";
@@ -299,6 +353,14 @@ public:
                 case Formula_Exception_Type::Unexpected_Symbol:
                     std::cout << "неожиданный символ.";
                 }
+                std::cout << std::endl;
+                delete e;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Введите формулу: ";
+                std::getline(std::cin, s);
+                std::cout << "1 - вещественные числа" << std::endl << "2 - дробные числа" << std::endl << "3 - матрицы" << std::endl;
+                std::cin >> key;
+                return Calculate(s, key - 1);
             }
             else if (e->Get_Type() == Exception_Type::Calculable_Exception)
             {
@@ -328,10 +390,9 @@ public:
                     std::cout << "обнаружено возведение в степень, показатель которой меньше 0";
                     break;
                 }
+                delete e;
+                exit(0);
             }
-            Clear();
-            delete e;
-            exit(0);
         }
     }
 };
@@ -341,10 +402,20 @@ int main()
     system("chcp 1251 > null");
     std::string task;
     int key;
+    std::cout << "1 - вещественные числа" << std::endl << "2 - дробные числа" << std::endl << "3 - матрицы" << std::endl << "4 - взять из файла" << std::endl;
+    std::cin >> key;
+    if (key != 4)
+    {
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cout << "Введите формулу: ";
     std::getline(std::cin, task);
-    std::cout << "1 - вещественные числа" << std::endl << "2 - дробные числа" << std::endl << "3 - матрицы" << std::endl;
-    std::cin >> key;
+    }
+    else
+    {
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Введите название файла: ";
+        std::getline(std::cin, task);
+    }
     Calculator calc;
     Data* ans = calc.Calculate(task, key - 1);
     ans->Show();
