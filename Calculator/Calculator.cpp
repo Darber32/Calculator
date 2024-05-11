@@ -25,7 +25,11 @@ private:
         if (key == 3)
         {
             std::fstream file;
-            file.open("test.json");
+            file.open(s);
+            if (not file)
+            {
+                throw new Formula_Exception(Formula_Exception_Type::Wrong_File);
+            }
             file >> json;
             file.close();
             s = json["formula"];
@@ -105,10 +109,12 @@ private:
                         break;
                     case 3:
                     {
+                        bool flag = false;
                         for (auto i : json["variables"])
                         {
                             if (i["name"] == var)
                             {
+                                flag = true;
                                 int x = i["type"];
                                 switch (x)
                                 {
@@ -121,17 +127,25 @@ private:
                                 case 2:
                                     rows = i["value"]["rows"];
                                     cols = i["value"]["cols"];
-                                    arr.resize(rows);
-                                    for (int i = 0; i < arr.size(); i++)
+                                    for (auto i : i["value"]["data"])
                                     {
-                                        arr[i].resize(cols);
-                                        for (int j = 0; j < arr[i].size(); j++)
-                                            arr[i][j] = json["variables"][2]["value"]["data"][i][j];
+                                        std::vector<double> row;
+                                        for (auto j : i)
+                                            row.push_back(j);
+                                        if (row.size() != cols)
+                                            throw new Calculable_Exception(Calculable_Exception_Type::Wrong_Matrix);
+                                        arr.push_back(row);
                                     }
+                                    if (arr.size() != rows)
+                                        throw new Calculable_Exception(Calculable_Exception_Type::Wrong_Matrix);
                                     data = new Matrix(rows, cols, &arr);
                                 }
                                 break;
                             }
+                        }
+                        if (not flag)
+                        {
+                            throw new Calculable_Exception(Calculable_Exception_Type::No_Operand);
                         }
                     }
                     }
@@ -335,10 +349,13 @@ public:
         catch (Exception* e)
         {
             Clear();
-            if (e->Get_Type() == Exception_Type::Formula_Exception)
+            Formula_Exception* fe;
+            Calculable_Exception* ce;
+            switch (e->Get_Type())
             {
+            case Exception_Type::Formula_Exception:
                 std::cout << "Формула введена неверно: ";
-                Formula_Exception* fe = static_cast<Formula_Exception*>(e);
+                fe = static_cast<Formula_Exception*>(e);
                 switch (fe->Get_Exception_Type())
                 {
                 case Formula_Exception_Type::Bracket_Mismatch:
@@ -352,46 +369,65 @@ public:
                     break;
                 case Formula_Exception_Type::Unexpected_Symbol:
                     std::cout << "неожиданный символ.";
+                    break;
+                case Formula_Exception_Type::Wrong_File:
+                    std::cout << "файл не найден.";
+                    break;
                 }
                 std::cout << std::endl;
                 delete e;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Введите формулу: ";
-                std::getline(std::cin, s);
-                std::cout << "1 - вещественные числа" << std::endl << "2 - дробные числа" << std::endl << "3 - матрицы" << std::endl;
+                std::cout << "1 - вещественные числа" << std::endl << "2 - дробные числа" << std::endl << "3 - матрицы" << std::endl << "4 - взять из файла" << std::endl;
                 std::cin >> key;
-                return Calculate(s, key - 1);
-            }
-            else if (e->Get_Type() == Exception_Type::Calculable_Exception)
-            {
-                std::cout << "Ошибка в вичислении: ";
-                Calculable_Exception* ce = static_cast<Calculable_Exception*>(e);
-                switch (ce->Get_Exception_Type())
+                if (key != 4)
                 {
-                case Calculable_Exception_Type::Division_By_Zero:
-                    std::cout << "обнаружено деление на ноль.";
-                    break;
-                case Calculable_Exception_Type::Type_Mismatch:
-                    std::cout << "обнаружено несоответствие типов.";
-                    break;
-                case Calculable_Exception_Type::Matrix_Sum:
-                    std::cout << "сложение матриц невозможно: разное количество строк и/или столбцов.";
-                    break;
-                case Calculable_Exception_Type::Matrix_Diff:
-                    std::cout << "вычитание матриц невозможно: разное количество строк и/или столбцов.";
-                    break;
-                case Calculable_Exception_Type::Matrix_Mult:
-                    std::cout << "умножение матриц невозможно: разное количество строк первой матрицы и столбцов второй матрицы.";
-                    break;
-                case Calculable_Exception_Type::Matrix_Div:
-                    std::cout << "обнаружено деление на матрицу.";
-                    break;
-                case Calculable_Exception_Type::Negative_Indicator:
-                    std::cout << "обнаружено возведение в степень, показатель которой меньше 0";
-                    break;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Введите формулу: ";
+                    std::getline(std::cin, s);
                 }
-                delete e;
-                exit(0);
+                else
+                {
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Введите название файла: ";
+                    std::getline(std::cin, s);
+                }
+                return Calculate(s, key - 1);
+                break;
+            case Exception_Type::Calculable_Exception:
+                    std::cout << "Ошибка в вычислении: ";
+                    ce = static_cast<Calculable_Exception*>(e);
+                    switch (ce->Get_Exception_Type())
+                    {
+                    case Calculable_Exception_Type::Division_By_Zero:
+                        std::cout << "обнаружено деление на ноль.";
+                        break;
+                    case Calculable_Exception_Type::Type_Mismatch:
+                        std::cout << "обнаружено несоответствие типов.";
+                        break;
+                    case Calculable_Exception_Type::Matrix_Sum:
+                        std::cout << "сложение матриц невозможно: разное количество строк и/или столбцов.";
+                        break;
+                    case Calculable_Exception_Type::Matrix_Diff:
+                        std::cout << "вычитание матриц невозможно: разное количество строк и/или столбцов.";
+                        break;
+                    case Calculable_Exception_Type::Matrix_Mult:
+                        std::cout << "умножение матриц невозможно: разное количество строк первой матрицы и столбцов второй матрицы.";
+                        break;
+                    case Calculable_Exception_Type::Matrix_Div:
+                        std::cout << "обнаружено деление на матрицу.";
+                        break;
+                    case Calculable_Exception_Type::Negative_Indicator:
+                        std::cout << "обнаружено возведение в степень, показатель которой меньше 0";
+                        break;
+                    case Calculable_Exception_Type::Wrong_Matrix:
+                        std::cout << "параметры матрицы даны неверно.";
+                        break;
+                    case Calculable_Exception_Type::No_Operand:
+                        std::cout << "в формуле отсутствует операнд.";
+                        break;
+                    }
+                    delete e;
+                    exit(0);
+                    break;
             }
         }
     }
@@ -418,6 +454,9 @@ int main()
     }
     Calculator calc;
     Data* ans = calc.Calculate(task, key - 1);
+    std::cout << "Ответ: ";
+    if (ans->Get_Type() == Type::Matrix)
+        std::cout << std::endl;
     ans->Show();
 }
 

@@ -40,8 +40,7 @@ Data* Matrix::Plus(Data* b)
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				data[i][j] += x;
-		Matrix* m = new Matrix(rows, cols, &data);
-		return m;
+		return new Matrix(rows, cols, &data);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -56,8 +55,7 @@ Data* Matrix::Minus(Data* b)
 			for (int i = 0; i < rows; i++)
 				for (int j = 0; j < cols; j++)
 					data[i][j] -= m->data[i][j];
-			Matrix* ans = new Matrix(rows, cols, &data);
-			return ans;
+			return new Matrix(rows, cols, &data);
 		}
 		else
 			throw new Calculable_Exception(Calculable_Exception_Type::Matrix_Diff);
@@ -68,8 +66,7 @@ Data* Matrix::Minus(Data* b)
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				data[i][j] -= x;
-		Matrix* m = new Matrix(rows, cols, &data);
-		return m;
+		return new Matrix(rows, cols, &data);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -95,8 +92,7 @@ Data* Matrix::Multiplication(Data* b)
 						new_data[i][j] += data[i][k] * m->data[k][j];
 				}
 			}
-			Matrix* ans = new Matrix(rows, cols, &new_data);
-			return ans;
+			return new Matrix(rows, cols, &new_data);
 		}
 		else
 			throw new Calculable_Exception(Calculable_Exception_Type::Matrix_Mult);
@@ -104,9 +100,10 @@ Data* Matrix::Multiplication(Data* b)
 	else if (b->Get_Type() == Type::Double)
 	{
 		Matrix* m = new Matrix(rows, cols, &data);
+		int x = dynamic_cast<Double*>(b)->Get_Data();
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
-				m->data[i][j] *= dynamic_cast<Double*>(b)->Get_Data();
+				m->data[i][j] *= x;
 		return m;
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);

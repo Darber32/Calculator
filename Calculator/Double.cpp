@@ -31,8 +31,7 @@ Data* Double::Plus(Data* b)
 	{
 		Fraction* f = dynamic_cast<Fraction*>(b);
 		double x = static_cast<double>(f->numerator) / static_cast<double>(f->denominator);
-		Double* c = new Double(data + x);
-		return c;
+		return new Double(data + x);
 	}
 	else if (b->Get_Type() == Type::Matrix)
 	{
@@ -41,8 +40,7 @@ Data* Double::Plus(Data* b)
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				data[i][j] += this->data;
-		Matrix * m = new Matrix(rows, cols, &data);
-		return m;
+		return new Matrix(rows, cols, &data);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -60,8 +58,7 @@ Data* Double::Minus(Data* b)
 	{
 		Fraction* f = dynamic_cast<Fraction*>(b);
 		double x = static_cast<double>(f->numerator) / static_cast<double>(f->denominator);
-		Double* c = new Double(data - x);
-		return c;
+		return new Double(data - x);
 	}
 	else if (b->Get_Type() == Type::Matrix)
 	{
@@ -70,8 +67,7 @@ Data* Double::Minus(Data* b)
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				data[i][j] = this->data - data[i][j];
-		Matrix* m = new Matrix(rows, cols, &data);
-		return m;
+		return new Matrix(rows, cols, &data);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -88,8 +84,7 @@ Data* Double::Multiplication(Data* b)
 	{
 		Fraction* f = dynamic_cast<Fraction*>(b);
 		double x = static_cast<double>(f->numerator) / static_cast<double>(f->denominator);
-		Double* c = new Double(data * x);
-		return c;
+		return new Double(data * x);
 	}
 	else if (b->Get_Type() == Type::Matrix)
 	{
@@ -98,8 +93,7 @@ Data* Double::Multiplication(Data* b)
 		for (int i = 0; i < rows; i++)
 			for (int j = 0; j < cols; j++)
 				data[i][j] *= this->data;
-		Matrix* m = new Matrix(rows, cols, &data);
-		return m;
+		return new Matrix(rows, cols, &data);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -121,8 +115,7 @@ Data* Double::Division(Data* b)
 		double x = static_cast<double>(f->numerator) / static_cast<double>(f->denominator);
 		if (x == 0)
 			throw new Calculable_Exception(Calculable_Exception_Type::Division_By_Zero);
-		Double* c = new Double(data / x);
-		return c;
+		return new Double(data / x);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }

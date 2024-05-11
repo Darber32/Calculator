@@ -3,7 +3,7 @@
 
 enum class Formula_Exception_Type
 {
-	Bracket_Mismatch, Lack_Of_Operands, No_Operation, Unexpected_Symbol
+	Bracket_Mismatch, Lack_Of_Operands, No_Operation, Unexpected_Symbol, Wrong_File
 };
 
 class Formula_Exception : public Exception

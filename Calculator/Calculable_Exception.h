@@ -3,7 +3,7 @@
 
 enum class Calculable_Exception_Type
 {
-	Division_By_Zero, Type_Mismatch, Matrix_Sum, Matrix_Diff, Matrix_Mult, Matrix_Div, Negative_Indicator
+	Division_By_Zero, Type_Mismatch, Matrix_Sum, Matrix_Diff, Matrix_Mult, Matrix_Div, Negative_Indicator, Wrong_Matrix, No_Operand
 };
 
 

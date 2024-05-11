@@ -26,6 +26,7 @@ Fraction::Fraction(int _numerator, int _denominator) : numerator(_numerator), de
 		numerator *= -1;
 		denominator *= -1;
 	}
+	Shorten_The_Fraction();
 }
 
 void Fraction::Show()
@@ -67,8 +68,7 @@ Data* Fraction::Plus(Data* b)
 	{
 		double c = dynamic_cast<Double*>(b)->Get_Data();
 		double d = static_cast<double>(numerator) / static_cast<double>(denominator);
-		Double* data = new Double(c + d);
-		return data;
+		return new Double(c + d);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -94,8 +94,7 @@ Data* Fraction::Minus(Data* b)
 	{
 		double c = dynamic_cast<Double*>(b)->Get_Data();
 		double d = static_cast<double>(numerator) / static_cast<double>(denominator);
-		Double* data = new Double(d - c);
-		return data;
+		return new Double(d - c);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -113,8 +112,7 @@ Data* Fraction::Multiplication(Data* b)
 	{
 		double c = dynamic_cast<Double*>(b)->Get_Data();
 		double d = static_cast<double>(numerator) / static_cast<double>(denominator);
-		Double* data = new Double(d * c);
-		return data;
+		return new Double(d * c);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
@@ -138,8 +136,7 @@ Data* Fraction::Division(Data* b)
 		if (c == 0)
 			throw new Calculable_Exception(Calculable_Exception_Type::Division_By_Zero);
 		double d = static_cast<double>(numerator) / static_cast<double>(denominator);
-		Double* data = new Double(d / c);
-		return data;
+		return new Double(d / c);
 	}
 	throw new Calculable_Exception(Calculable_Exception_Type::Type_Mismatch);
 }
